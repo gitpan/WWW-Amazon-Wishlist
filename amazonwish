@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!perl -w
 #
 # Grab all the values from your Amazon Wish list
 # and then print it out - surprisingly scary (at

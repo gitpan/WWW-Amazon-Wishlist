@@ -1,5 +1,9 @@
 Revision history for Perl extension WWW::Amazon::Wishlist.
 
+
+0.85  Fri Oct 25 17:43:12 2002
+	- Fix some minor bugs
+
 0.8   Mon Aug 36 10:25:33 2002
 	- Amazon changed the layout of their .com pages 
 	  so this heroic patch from the mysteriously 

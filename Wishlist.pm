@@ -27,7 +27,7 @@ require AutoLoader;
 );
 
 
-$VERSION = '0.8';
+$VERSION = '0.85';
 
 
 =pod
@@ -147,11 +147,10 @@ my $domain = ($uk)? "co.uk" : "com";
 
 
 
-my $ua = new LWP::UserAgent;
-
-# for some reason we need to fake this *cough*
-# probably to explicitly stop screen scraping
-$ua->agent('Mozilla/5.0');
+my $ua = new LWP::UserAgent( keep_alive => 1,
+                             timeout => 30,
+			     agent => 'Mozilla/5.0',
+			   );
 
 
 # set up some variables
@@ -169,14 +168,23 @@ while (1)
  # this should be explanatory also 
  my $url      =  "http://www.amazon.$domain/exec/obidos/wishlist/$id/?registry.page-number=$page";
  my $request  =  HTTP::Request->new ( 'GET',$url );
- my $response =  $ua->request($request);
+ my $response;
+
+ my $times = 0;
 
  # also bad, let's just give up
- if (!$response->is_success) {
- croak "Couldn't get page '$url'\n";
- return undef;
+ while ($times++<3)
+ {
+	$response =  $ua->request($request);
+ 	last if $response->is_success;
  }
 
+
+if (!$response->is_success)
+{
+	croak "Failed to retrieve $url";
+	return undef;
+}
 
 # get the goods
 my $content = $response->content;
@@ -278,7 +286,7 @@ sub extract_books
 		    
 		    # Get the title. 
 		    my $title = 'TITLE'; #BUGBUG
-		    if ($text =~ /(.+)\s(by|DVD;|VHS;)/) {
+		    if ($text =~ /(.+)\s(by|DVD;|VHS;|~)/) {
 			$title = $1;
 			# Clean up some cruft for VHS and DVD's.
 			#  anything after ~ is the creator.
@@ -311,8 +319,10 @@ sub extract_books
 		    @book{qw(asin title author type price)}
 		    = ($asin, $title, $author, $type, $price);
 
+		
 		    # Add this book to the retur structure.
-		    push @books, \%book unless $seen{$book{'asin'}}++;
+		    # bit of a hack, why do we sometimes not get the ASIN?
+		    push @books, \%book unless (defined $book{'asin'} && $seen{$book{'asin'}}++);
 		}
 	    }   # End td tag if
 	}     # End if type is S BUGBUG
