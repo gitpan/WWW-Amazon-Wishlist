@@ -1,5 +1,7 @@
 Revision history for Perl extension WWW::Amazon::Wishlist.
 
+1.1   Wed Jun  2 09:57:59 BST 2004
+	- Changes to US template layout
 
 1.0   Tue Dec 16 14:55:15 2003
 	- switch to using Template::Extract 
@@ -18,8 +20,8 @@ Revision history for Perl extension WWW::Amazon::Wishlist.
 	- Amazon changed the layout of their .com pages 
 	  so this heroic patch from the mysteriously 
 	  named Artimage fixes it. Actually he fixed it ages 
-          ago it's just I was too slck to apply it and figure out
-          some stuff.
+      ago it's just I was too slack to apply it and figure out
+      some stuff.
 
 0.7   Wed Feb 27 13:10:56 2002
 	- there was some curft creeping in if it was a DVD.
@@ -38,15 +40,15 @@ Revision history for Perl extension WWW::Amazon::Wishlist.
 	- added COM and UK exportable constants	  
 
 0.61  Fri Dec 07 15:59:20 2001
-        - fixed an unescaped '@' in the here doc of amazonwish 
-          thanks again to Rhet Turnball. He's great :) 
+    - fixed an unescaped '@' in the here doc of amazonwish 
+      thanks again to Rhet Turnball. He's great :) 
 
 0.6   Fri Dec 07 11:55:43 2001
-        - added some fixes from Rhet Turnball for not getting pages
-          properly and adding some items twice. Yay Open Source!
+    - added some fixes from Rhet Turnball for not getting pages
+      properly and adding some items twice. Yay Open Source!
 
-        - also added 'amazonwish' a script to go and grab your 
-          wishlist for you and spew out the total.
+    - also added 'amazonwish' a script to go and grab your 
+      wishlist for you and spew out the total.
 
 0.01  Tue Nov 13 11:31:09 2001
 	- original version; created by h2xs 1.19

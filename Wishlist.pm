@@ -27,7 +27,7 @@ require AutoLoader;
 );
 
 
-$VERSION = '1.0';
+$VERSION = '1.1';
 
 
 =pod
@@ -282,46 +282,27 @@ $UK_TEMPLATE = <<'EOT';
 [%- END -%]</table>[% ... %]</form>
 EOT
 
-
 $US_TEMPLATE = <<'EOT'; 
+<table border="0" cellpadding="3" cellspacing="0" width="100%">
+[% ... %]
+[%- FOREACH items -%] 
+<tr valign="top"><td colspan=2 align=right><b>[% number %].</b></td></tr>[% ... %]
+<a href="/o/ASIN/[% asin %]/[% ... %]"><img src="[% image %]" [% ... %]
+<a href="[% ... %]">[% title %]</a>[% ... %]
+by [% author %]</td></tr>[% ... %]
+Date Added: [% date %]</span>[% ... %]
+<span style="color:#000000">Price:</span> [% price %]</b>[% ... %]
+[%- END -%]</tr></table>
+EOT
+
+$OLD_US_TEMPLATE = <<'EOT'; 
 <table border=0 cellpadding=0 cellspacing=0 width="100%">
 [% ... %]
 [%- FOREACH items -%] 
 <td width=15 align=right class="small"><b>[% number %].</b><br />[% ... %]
-<td width=65 align=center class="small"><img src="[% image %]" [% ... %]
-<a href="/o/ASIN/[% asin %]/[% ... %]">[% title %]</a>[% ... %]
-by [% author %]<br />
-
-<span [% ... %]
-Date Added: [% date %]<br />[% ... %]
 <span style="color:#000000">Price:</span> [% price %]<br />[% ... %]
-[%- END -%]</tr></table>
-EOT
-
-
-$OLD_US_TEMPLATE = <<'EOT'; 
-&page=[% next_page %]">Next[% ... %]
-<form method="post" action="/gp/registry/registry.html/[% ... %]?%5Fencoding=UTF8&id=[% ... %]">
-<table border=0 cellpadding=0 cellspacing=0 width="100%">
-[% ... %]
-[%- FOREACH items -%] 
-<td width=15 align=right class="small"><b>[% number %].</b><br />
-
-</td>
-<td width=1></td>
-<td width=65 align=center class="small"><img src="[% image %]" [% ... %]
-<a href="/o/ASIN/[% asin %]/[% ... %]">[% title %]</a>[% ... %]
-by [% author %]<br />
-
-<span>[% ... %]
-Date Added: [% date %]<br />[% ... %]
-<span style="color:#000000">Price:</span> [% price %]<br />[% ... %]
-[%- END -%]</tr></table>
-</form>
-</td></tr>
-<tr><td height="10"><img src="http://g-images.amazon.com/images/G/01/misc/transparent-pixel.gif" height="10" border="0" width="1" /
-></td></tr>
-<tr><td class="small">
+[%- END -%]</form
+</tr></table>
 EOT
 
 1;
