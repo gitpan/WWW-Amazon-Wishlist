@@ -1,6 +1,11 @@
 Revision history for Perl extension WWW::Amazon::Wishlist.
 
 
+1.0   Tue Dec 16 14:55:15 2003
+	- switch to using Template::Extract 
+	- add more fields
+	- cleanup
+
 0.9   Tue Feb 11 12:30:16 2003
 	- set User Agent again to fix weirdness
 	- ASIN format has changed

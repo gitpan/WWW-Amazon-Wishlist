@@ -112,22 +112,22 @@ exit 0;
 # check to see if we've already stored the settings or we're forcing 
 if (-e $res && !$force && !$save)
 {
-	open FILE, $res || die "Couldn't open the resource file '$res' for reading : $!\n";
-	# grab all the value
-	while (<FILE>) 
-	{
-		chomp;
-		#
-		my ($key, $value) =split /\s*=\s*/;
-		if ($key =~ /\s*uk\s*$/) {
-			$uk = $value;
-		} elsif ($key =~ /\s*id\s*$/) {
-			$id = $value;
-			$id =~ s/^\s*([^\s]+)\s*$/$1/;		
-		}
+    open FILE, $res || die "Couldn't open the resource file '$res' for reading : $!\n";
+    # grab all the value
+    while (<FILE>) 
+    {
+        chomp;
+        #
+        my ($key, $value) =split /\s*=\s*/;
+        if ($key =~ /\s*uk\s*$/) {
+            $uk = $value;
+        } elsif ($key =~ /\s*id\s*$/) {
+            $id = $value;
+            $id =~ s/^\s*([^\s]+)\s*$/$1/;        
+        }
 
-	}
-	close FILE;
+    }
+    close FILE;
 
 } 
 
@@ -137,25 +137,33 @@ die "You haven't defined an id\n" unless (defined $id);
 # if it's a uk version update the variables
 if ($uk)
 {
-	$suffix = "co.uk";
-	$match  = "&pound;";
-	$symbol = "£";
+    $suffix = "co.uk";
+    $match  = "&pound;";
+    $symbol = "£";
 
-		
+        
 } 
 
 # and write out to our resource file
 unless (-e $res && !$save)
 {
-	open FILE, ">$res" || die "Couldn't open the resource file '$res' for writing : $!\n";
-	print FILE "id = $id\nuk = $uk\n";
-	close FILE;
+    open FILE, ">$res" || die "Couldn't open the resource file '$res' for writing : $!\n";
+    print FILE "id = $id\nuk = $uk\n";
+    close FILE;
 }
 
 foreach my $bookref (get_list ($id,  $uk))
 {
                 my %book = %{$bookref};
-                print '"'.$book{'title'}.'" by '.$book{'author'}." (".(($uk)?'£':'$').$book{'price'}.") [".$book{'type'}."]\n" if ($verbose);
+
+				$book{'price'} =~ s/[^.\d]//g unless $book{'price'} =~ /unavailable/;
+					
+				if ($verbose) {
+					printf "'%s' by %s (%s%s)", $book{'title'}, $book{'author'}, (($uk)?'£':'$'), $book{'price'};
+					printf " [%s]", $book{'type'} if defined $book{'type'};
+					printf "\n";
+				} 
+
                 $total += $book{'price'} unless (!defined $book{'price'} || $book{'price'} =~ /unavailable/i);
 
 
@@ -179,9 +187,9 @@ amazonwish - goes and grabs your amazon.(co.uk|com) wishlist and totals it up fo
 
 =head1 USAGE 
 
--uk	 : get values from amazon.co.uk (default is .com)
+-uk     : get values from amazon.co.uk (default is .com)
 
--id	 : your amazon wish list id (it's the last bit of the URL after /wishlist/)
+-id     : your amazon wish list id (it's the last bit of the URL after /wishlist/)
 
 -force   : don't look up values from the resource file
 
@@ -195,7 +203,7 @@ the first time you run the script you must supply the values
 but after that it will save them in .amazon_wish in your
 home directory.
 
-You can overide the resource file by using -force option or the	
+You can overide the resource file by using -force option or the    
 -save option (which will save the new values into the resource
 file).
 

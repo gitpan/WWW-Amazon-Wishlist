@@ -14,8 +14,6 @@ print "ok 1\n";
 
 ######################### End of black magic.
 
-# Insert your test code below (better if it prints "ok 13"
-# (correspondingly "not ok 13") depending on the success of chunk 13
 # of the test code):
 
 # this has been commented out 'cos
@@ -27,12 +25,17 @@ print "ok 1\n";
 # .com
 #my @books_com = get_list ("2EAJG83WS7YZM", COM);
 #print "ok 2\n";
-#print_books (0, @books_com);
+#use Data::Dumper;
+#print Dumper @books_com;
+
 
 #print "<hr>";
 
 #my @books_uk  = get_list ("108ACFCI5OK8I", UK);
 #print "ok 3\n";
+#use Data::Dumper;
+#print Dumper @books_uk;
+
 #print_books (1, @books_uk);
 
 
@@ -46,8 +49,8 @@ sub print_books
 	foreach my $bookref (@books)
 	{
 		my %book = %{$bookref};
-		print '"'.$book{'title'}.'" by '.$book{'author'}." (".(($uk)?'£':'$').$book{'price'}.") [".$book{'type'}."]<br>\n";
-		#print "urk ",$book{'title'},"\n"  unless $book{'asin'};
+		#print '"'.$book{'title'}.'" by '.$book{'author'}." (".(($uk)?'£':'$').$book{'price'}.") [".$book{'type'}."]<br>\n";
+		print "urk ",$book{'title'},"\n"  unless $book{'asin'};
 		$total += $book{'price'};
 	}
 
