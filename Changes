@@ -1,4 +1,11 @@
-Revision history for Perl extension Amazon.
+Revision history for Perl extension WWW::Amazon::Wishlist.
+
+0.6   Fri Dec 07 11:55:43 2001
+        - added some fixes from Rhet Turnball for not getting pages
+          properly and adding some items twice. Yay Open Source!
+
+        - also added 'amazonwish' a script to go and grab your 
+          wishlist for you and spew out the total.
 
 0.01  Tue Nov 13 11:31:09 2001
 	- original version; created by h2xs 1.19

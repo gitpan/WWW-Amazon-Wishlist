@@ -18,6 +18,8 @@ Root is scary. Tree pretty. Beer Foamy. Fire bad.
 
 You have been warned.
 
+It also installs a utility called amazonwish which will grab your amazon wishlist for you and total it up.
+
 -----------------------------------
 SYNOPSIS
 -----------------------------------
@@ -53,7 +55,11 @@ DESCRIPTION
 
 Goes to Amazon.(com|co.uk) and scrapes away your wishlist and returns it in a array of hashrefs so that you can fiddle with it until your hearts content.
 
+
+-----------------------------------
 GETTING YOUR AMAZON ID
+-----------------------------------
+
 
 The best way to do this is to search for your own wishlist in the search tools.
 
@@ -75,7 +81,7 @@ Doing the same for amazon.co.uk is just as easy.
 SHOWING YOUR APPRECIATION
 -----------------------------------
 
-There was a thread on london.pm mailin list about working in a vacumn - that it was a bit depressing to keep writing
+There was a thread on london.pm mailing list about working in a vacumn - that it was a bit depressing to keep writing
 modules but never get any feedback. So, if you use and like this module then please send me an email and make my day. 
 
 All it takes is a few little bytes.

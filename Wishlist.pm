@@ -21,7 +21,7 @@ require AutoLoader;
 );
 
 
-$VERSION = '0.5';
+$VERSION = '0.6';
 
 
 =pod
@@ -73,7 +73,7 @@ Doing the same for amazon.co.uk is just as easy.
 
 =head1 SHOWING YOUR APPRECIATION
 
-There was a thread on london.pm mailin list about working in a vacumn - that it was a bit depressing to keep writing
+There was a thread on london.pm mailing list about working in a vacumn - that it was a bit depressing to keep writing
 modules but never get any feedback. So, if you use and like this module then please send me an email and make my day. 
 
 All it takes is a few little bytes.
@@ -108,7 +108,7 @@ Simon Wistow <simon@thegestalt.org>
 
 =head1 SEE ALSO
 
-L<perl>, L<LWP::UserAgent>
+L<perl>, L<LWP::UserAgent>, L<amazonwish>
 
 =cut
 
@@ -170,7 +170,7 @@ sub get_list
 		push @books, extract_books ($content, $uk );
 
 		# check to see if there's another page to go to 
-        	if ($content =~ /registry.page-number=(\d+)/) 
+        	if ($content =~ /registry.page-number=(\d+).*button-more-results/) 
 		{
 			 $page = $1;
 		} 
@@ -197,6 +197,7 @@ sub extract_books
 	$uk |= 0;
 	
 	my @books;
+        my %seen;
 	my $currency;	
 		
 	# set up some stuff to search for later
@@ -231,9 +232,11 @@ sub extract_books
 		$book{'price'}  = $5;
 
 		$book{'author'} =~ s/\s*(by|~)\s+//; # get rid of cruft
+		$book{'type'} =~ s/<[^>]*>//g;
 
-		push @books, \%book;
+		push @books, \%book unless $seen{$book{'asin'}};
 
+		$seen{$book{'asin'}} = 1;
 	
 	}	
 
