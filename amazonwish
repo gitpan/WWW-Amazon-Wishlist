@@ -15,6 +15,7 @@
 # probably destroy your wish list, kill your friends
 # burn your house and bring about the apocalypse
 
+# v1.31 fixed an unescaped @ sign in the here doc
 # v1.3  changed to use my shiny new WWW::Amazon::Wishlist module
 # v1.21 fixed number formatting bug (thanks to 'Evil' Dave Cantrell)
 # v1.2  fixes bug in grabbing stuff from .co.uk
@@ -91,7 +92,7 @@ Finding Your Amazon ID
 
 The best way to do this is to search for your own wishlist in the search tools.
 
-Searching for mine (simon@twoshortplanks.com) on amazon.com takes me to the URL
+Searching for mine (simon\@twoshortplanks.com) on amazon.com takes me to the URL
 
    http://www.amazon.com/exec/obidos/wishlist/2EAJG83WS7YZM/ 
  

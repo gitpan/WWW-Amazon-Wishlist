@@ -1,5 +1,9 @@
 Revision history for Perl extension WWW::Amazon::Wishlist.
 
+0.61  Fri Dec 07 15:59:20 2001
+        - fixed an unescaped '@' in the here doc of amazonwish 
+          thanks again to Rhet Turnball. He's great :) 
+
 0.6   Fri Dec 07 11:55:43 2001
         - added some fixes from Rhet Turnball for not getting pages
           properly and adding some items twice. Yay Open Source!
