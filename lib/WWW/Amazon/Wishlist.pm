@@ -1,7 +1,7 @@
 package WWW::Amazon::Wishlist;
 
 use strict;
-use vars qw($VERSION @ISA @EXPORT @EXPORT_OK $UK_TEMPLATE $US_TEMPLATE $OLD_US_TEMPLATE);
+use vars qw($VERSION @ISA @EXPORT @EXPORT_OK $UK_TEMPLATE $US_TEMPLATE $OLD_US_TEMPLATE $OLD_UK_TEMPLATE);
 use LWP::UserAgent;
 use Template::Extract;
 use Carp;
@@ -27,7 +27,7 @@ require AutoLoader;
 );
 
 
-$VERSION = '1.1';
+$VERSION = '1.2';
 
 
 =pod
@@ -97,7 +97,7 @@ It doesn't parse other fields from the wishlist such as number wanted, how long 
 
 It doesn't cope with anything apart from .co.uk and .com yet. Probably.
 
-I don't think it likes unavailable items.
+I don't think it likes unavailable items - tyring to work round this breaks UK compatability.
 
 The code has accumulated lots of cruft.
 
@@ -162,21 +162,24 @@ sub get_list
 	{
 
         # this should be explanatory also 
-        my $url = ($uk) ? "http://www.amazon.co.uk/exec/obidos/wishlist/$id/?registry.page-number=$page" :
+        my $url = ($uk) ? "http://www.amazon.co.uk/exec/obidos/registry/$id/?registry.page-number=$page" :
 	    			      "http://www.amazon.com/gp/registry/registry.html/?id=$id&page=$page";
 
 
 		my $content = _fetch_page($url, $domain);
 
 		return undef unless ($content);
-   
 
 		my $result = $obj->extract($template, $content);
 
-        last unless defined $result->{items};
+		#use Data::Dumper;
+		#print Dumper($result);
+        last unless defined $result && $result->{items};
 
 		foreach my $item (@{$result->{items}}) 
 		{
+			$item->{'author'} =~ s!\n!!g;
+			$item->{'author'} =~ s!^\s*by\s+!!g;
 			$item->{'author'} =~ s!</span></b><br />\n*!!s;
 			push @items, $item;
 		}
@@ -187,6 +190,7 @@ sub get_list
  		# UK doens't seem to split up over pages
 		# paranoia
         last unless defined $next;
+		
 		
 		# more paranoia		
         last unless $next > $page;
@@ -260,6 +264,22 @@ sub _fetch_page {
 
 
 $UK_TEMPLATE = <<'EOT';
+<table[% ... %]
+[% FOREACH items %]
+<i><a href=/exec/obidos/ASIN/[% asin %]/[% ... %]>
+<img src="[% image %]" width=[% ... %] height=[% ... %] border=0 align=top></a>
+[% ... %]
+<i><a href=[% ... %]>[% name %]</a></i><br>[% ... %]
+<font face=verdana,arial,helvetica size=-1>
+[%- author %];
+
+[% type %]<br>[% ... %]</font>[% ... %]
+<b>Date added:</b> [% date %]<br>[% ... %]
+[% END %]
+</table>
+EOT
+
+$OLD_UK_TEMPLATE = <<'EOT';
 [% ... %]
 [%- FOREACH items -%]
 <tr><td valign="top">[% ... %]

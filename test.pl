@@ -30,11 +30,10 @@ print "ok 1\n";
 
 
 #print "<hr>";
-
 #my @books_uk  = get_list ("108ACFCI5OK8I", UK);
 #print "ok 3\n";
 #use Data::Dumper;
-#print Dumper @books_uk;
+#print STDERR Dumper @books_uk;
 
 #print_books (1, @books_uk);
 

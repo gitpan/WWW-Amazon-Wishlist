@@ -1,8 +1,9 @@
-Wishlist.pm
+lib/WWW/Amazon/Wishlist.pm
 Changes
 COPYING
 MANIFEST
+Build.PL
 Makefile.PL
 README
 test.pl
-amazonwish
+bin/amazonwish
