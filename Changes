@@ -1,5 +1,9 @@
 Revision history for Perl extension WWW::Amazon::Wishlist.
 
+0.7   Wed Feb 27 13:10:56 2002
+	- there was some curft creeping in if it was a DVD.
+	  All fixed now :)
+
 0.66  Tue Dec 18 17:28:54 2001
 	- fixed mistake in amazonwish documentation about where
 	  your settings are saved.

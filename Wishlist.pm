@@ -26,7 +26,7 @@ require AutoLoader;
 );
 
 
-$VERSION = '0.66';
+$VERSION = '0.7';
 
 
 =pod
@@ -241,9 +241,17 @@ sub extract_books
 		@book{qw(asin title author type price)}  
 		  = ($1, $2, $3, $4, $5);
 
-		$book{price}  =~ s/,//g;
-		$book{author} =~ s/\s*(by|~)\s+//; # get rid of cruft
+		# sort out problems with prices over a grand 
+		$book{price}  =~ s/,//g;           
+
+		# get rid of cruft
 		$book{type}   =~ s/<[^>]*>//g;
+		$book{author} =~ s/\s*(by|~)\s+//; 
+		
+		# ... and some more cruft if it's a DVD.
+		$book{'author'}	=~ s!^<b>DVD</b>!!i if ($book{'type'} =~ /^DVD/);
+
+		
 
 		push @books, \%book unless $seen{$book{'asin'}}++;
 
