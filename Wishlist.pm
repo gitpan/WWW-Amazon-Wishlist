@@ -5,6 +5,9 @@ use vars qw($VERSION @ISA @EXPORT @EXPORT_OK);
 use LWP::UserAgent;
 use Carp;
 
+use constant COM => 0;
+use constant UK  => 1;
+
 require Exporter;
 require AutoLoader;
 
@@ -18,10 +21,12 @@ require AutoLoader;
 
 @EXPORT_OK = qw(
 	get_list
+        UK
+        COM
 );
 
 
-$VERSION = '0.61';
+$VERSION = '0.65';
 
 
 =pod
@@ -32,14 +37,19 @@ WWW::Amazon::Wishlist - grab all the details from your Amazon wishlist
 
 =head1 SYNOPSIS
 
-  use WWW::Amazon::Wishlist qw(get_list);
+  use WWW::Amazon::Wishlist qw(get_list COM UK);
   
   my @wishlist;
   
-  @wishlist = get_list ($my_amazon_com_id);      # gets it from amazon.com
-  @wishlist = get_list ($my_amazon_com_id,  0);  # same, explicitly
-  @wishlist = get_list ($my_amazon_couk_id, 1);  # gets it from amazon.co.uk
+  @wishlist = get_list ($my_amazon_com_id);       # gets it from amazon.com
+  @wishlist = get_list ($my_amazon_com_id,  COM); # same, explicitly
+  @wishlist = get_list ($my_amazon_couk_id, UK);  # gets it from amazon.co.uk
+
+  # or if you didn't import the COM and UK constants
+  @wishlist = get_list ($my_amazon_couk_id, WWW::Amazon::Wishlist::UK);  
   
+
+
   # the elements of @wishlist are hashrefs that contain ...
   foreach my $book (@wishlist)
   {
@@ -70,6 +80,8 @@ there's some more cruft after that last string of numbers and letters but it's t
 bit that's important.
 
 Doing the same for amazon.co.uk is just as easy.
+
+Apparently some people have had problems getting to their wishlist just after it gets set up. You may have to wait a while for it to become browseable.
 
 =head1 SHOWING YOUR APPRECIATION
 
@@ -169,6 +181,8 @@ sub get_list
 		my $content = $response->content;
 		push @books, extract_books ($content, $uk );
 
+		$oldpage = $page;
+
 		# check to see if there's another page to go to 
         	if ($content =~ /registry.page-number=(\d+).*button-more-results/) 
 		{
@@ -178,7 +192,6 @@ sub get_list
 		
 		# if not then get out of here
 		last unless ($page > $oldpage);
-		$oldpage = $page;
 
 	}
 
@@ -219,25 +232,21 @@ sub extract_books
 			  ([^;]+);\n\s*(.+=?)<br>\n\s*		     # get the author and type	
 			  [^$currency_char]+			     # more cruft skipping
 			  \Q$currency\E				     # tiny bit more
-			  (\d+.\d+)                                  # now get the price
+			  ([\d,]+\.\d+)                               # now get the price
 
 			 !mxgi
 	 	)
 	{
 		my %book;	
-		$book{'asin'}   = $1;
-		$book{'title'}  = $2;
-		$book{'author'} = $3;
-		$book{'type'}   = $4;
-		$book{'price'}  = $5;
+		@book{qw(asin title author type price)}  
+		  = ($1, $2, $3, $4, $5);
 
-		$book{'author'} =~ s/\s*(by|~)\s+//; # get rid of cruft
-		$book{'type'} =~ s/<[^>]*>//g;
+		$book{price}  =~ s/,//g;
+		$book{author} =~ s/\s*(by|~)\s+//; # get rid of cruft
+		$book{type}   =~ s/<[^>]*>//g;
 
-		push @books, \%book unless $seen{$book{'asin'}};
+		push @books, \%book unless $seen{$book{'asin'}}++;
 
-		$seen{$book{'asin'}} = 1;
-	
 	}	
 
 	return @books;

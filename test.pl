@@ -8,7 +8,7 @@
 
 BEGIN { $| = 1; print "1..1\n"; }
 END {print "not ok 1\n" unless $loaded;}
-use WWW::Amazon::Wishlist qw (get_list);
+use WWW::Amazon::Wishlist qw (get_list UK COM);
 $loaded = 1;
 print "ok 1\n";
 
@@ -22,13 +22,16 @@ print "ok 1\n";
 # it's difficult to test this sort 
 # of stuff
 
+#print "<hr>";
+
 # .com
-#my @books_com = get_list ("2EAJG83WS7YZM");
+#my @books_com = get_list ("2EAJG83WS7YZM", COM);
 #print "ok 2\n";
 #print_books (0, @books_com);
 
+#print "<hr>";
 
-#my @books_uk  = get_list ("108ACFCI5OK8I", 1);
+#my @books_uk  = get_list ("108ACFCI5OK8I", UK);
 #print "ok 3\n";
 #print_books (1, @books_uk);
 
@@ -43,7 +46,7 @@ sub print_books
 	foreach my $bookref (@books)
 	{
 		my %book = %{$bookref};
-		print '"'.$book{'title'}.'" by '.$book{'author'}." (".(($uk)?'£':'$').$book{'price'}.") [".$book{'type'}."]\n";
+		print '"'.$book{'title'}.'" by '.$book{'author'}." (".(($uk)?'£':'$').$book{'price'}.") [".$book{'type'}."]<br>\n";
 		$total += $book{'price'};
 	}
 

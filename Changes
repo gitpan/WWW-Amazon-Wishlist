@@ -1,5 +1,13 @@
 Revision history for Perl extension WWW::Amazon::Wishlist.
 
+0.65  Sun Dec 09 11:10:33 2001
+	- fixed a bug with single page wishlists plus some
+	  cleanups from uber data munger Dave Cross.
+
+	- also fixed bug with expensive items (over a grand)
+
+	- added COM and UK exportable constants	  
+
 0.61  Fri Dec 07 15:59:20 2001
         - fixed an unescaped '@' in the here doc of amazonwish 
           thanks again to Rhet Turnball. He's great :) 

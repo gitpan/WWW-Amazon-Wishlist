@@ -24,7 +24,7 @@
 use strict;
 use LWP::UserAgent;
 use Getopt::Long;
-use WWW::Amazon::Wishlist qw(get_list);
+use WWW::Amazon::Wishlist qw(get_list COM UK);
 
 # initialise the total
 my $total = 0;
