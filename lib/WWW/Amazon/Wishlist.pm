@@ -27,7 +27,7 @@ require AutoLoader;
 );
 
 
-$VERSION = '1.2';
+$VERSION = '1.3';
 
 
 =pod
@@ -97,7 +97,7 @@ It doesn't parse other fields from the wishlist such as number wanted, how long 
 
 It doesn't cope with anything apart from .co.uk and .com yet. Probably.
 
-I don't think it likes unavailable items - tyring to work round this breaks UK compatability.
+I don't think it likes unavailable items - trying to work round this breaks UK compatability.
 
 The code has accumulated lots of cruft.
 
@@ -130,7 +130,7 @@ my $USER_AGENT = 'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)';
 # does exactly what it says on the tin
 sub get_list 
 {
-	my ($id, $uk) = @_;
+	my ($id, $uk, $test) = @_;
 
 	# bad bad bad
 	unless (defined $id)
@@ -144,6 +144,7 @@ sub get_list
 	# default is amazon.com
 	$uk |= 0;
 
+	$test |= 0;
 
 	# fairly self explanatory
 	my $domain = ($uk)? "co.uk" : "com";
@@ -181,11 +182,19 @@ sub get_list
 			$item->{'author'} =~ s!\n!!g;
 			$item->{'author'} =~ s!^\s*by\s+!!g;
 			$item->{'author'} =~ s!</span></b><br />\n*!!s;
+
+			if ($uk && $item->{image} !~ m!^http:!) {
+				$item->{image} = "http://images-eu.amazon.com/images/P/".$item->{image};
+			}
+
 			push @items, $item;
 		}
 
 		
 		my ($next) = ($content =~  m!&page=(\d)+">Next!s);
+
+		# for debug purposes
+		last if $test;
 
  		# UK doens't seem to split up over pages
 		# paranoia
@@ -267,7 +276,7 @@ $UK_TEMPLATE = <<'EOT';
 <table[% ... %]
 [% FOREACH items %]
 <i><a href=/exec/obidos/ASIN/[% asin %]/[% ... %]>
-<img src="[% image %]" width=[% ... %] height=[% ... %] border=0 align=top></a>
+<img src="http://images-eu.amazon.com/images/P/[% image %]" width=[% ... %] height=[% ... %] border=0 align=top></a>
 [% ... %]
 <i><a href=[% ... %]>[% name %]</a></i><br>[% ... %]
 <font face=verdana,arial,helvetica size=-1>
@@ -279,50 +288,18 @@ $UK_TEMPLATE = <<'EOT';
 </table>
 EOT
 
-$OLD_UK_TEMPLATE = <<'EOT';
-[% ... %]
-[%- FOREACH items -%]
-<tr><td valign="top">[% ... %]
-<a href=/exec/obidos/ASIN/[% asin %]/[% ... %]>
-<img src="[% image %]" width=[% ... %] height=[% ... %] border=0 align=top></a>
-[% ... %]
-<i><a href=[% ... %]>[% name %]</a></i><br>[% ... %]
-<font face=verdana,arial,helvetica size=-1>
-
-
-[%- author -%];
-
-[% type %]<br>[% ... %]</font>[% ... %]
-&pound;[% price %]
-
-
-[% ... %]
-<b>Date added:</b> [% date %]<br>
-[% ... %]
-[%- END -%]</table>[% ... %]</form>
-EOT
 
 $US_TEMPLATE = <<'EOT'; 
 <table border="0" cellpadding="3" cellspacing="0" width="100%">
 [% ... %]
 [%- FOREACH items -%] 
 <tr valign="top"><td colspan=2 align=right><b>[% number %].</b></td></tr>[% ... %]
-<a href="/o/ASIN/[% asin %]/[% ... %]"><img src="[% image %]" [% ... %]
-<a href="[% ... %]">[% title %]</a>[% ... %]
+<img src="[% image %]" [% ... %]
+<a href="http://www.amazon.com/exec/obidos/tg/detail/-/[% asin %]/[% ... %]">[% title %]</a>[% ... %]
 by [% author %]</td></tr>[% ... %]
 Date Added: [% date %]</span>[% ... %]
 <span style="color:#000000">Price:</span> [% price %]</b>[% ... %]
 [%- END -%]</tr></table>
-EOT
-
-$OLD_US_TEMPLATE = <<'EOT'; 
-<table border=0 cellpadding=0 cellspacing=0 width="100%">
-[% ... %]
-[%- FOREACH items -%] 
-<td width=15 align=right class="small"><b>[% number %].</b><br />[% ... %]
-<span style="color:#000000">Price:</span> [% price %]<br />[% ... %]
-[%- END -%]</form
-</tr></table>
 EOT
 
 1;

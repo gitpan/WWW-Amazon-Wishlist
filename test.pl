@@ -1,37 +1,16 @@
-# Before `make install' is performed this script should be runnable with
-# `make test'. After `make install' it should work as `perl test.pl'
-
-######################### We start with some black magic to print on failure.
-
-# Change 1..1 below to 1..last_test_to_print .
-# (It may become useful if the test is moved to ./t subdirectory.)
-
-BEGIN { $| = 1; print "1..1\n"; }
-END {print "not ok 1\n" unless $loaded;}
-use WWW::Amazon::Wishlist qw (get_list UK COM);
-$loaded = 1;
-print "ok 1\n";
-
-######################### End of black magic.
-
-# of the test code):
-
-# this has been commented out 'cos
-# it's difficult to test this sort 
-# of stuff
-
-#print "<hr>";
+use Test::More tests => 3;                                                             
+                                                                                    
+BEGIN { use_ok('WWW::Amazon::Wishlist', qw(get_list UK COM)) };          
 
 # .com
+ok(get_list ("2EAJG83WS7YZM", COM, 1), "Got items from .com");
 #my @books_com = get_list ("2EAJG83WS7YZM", COM);
-#print "ok 2\n";
 #use Data::Dumper;
 #print Dumper @books_com;
 
 
-#print "<hr>";
+ok(get_list ("108ACFCI5OK8I", UK, 1), "Got items from UK");
 #my @books_uk  = get_list ("108ACFCI5OK8I", UK);
-#print "ok 3\n";
 #use Data::Dumper;
 #print STDERR Dumper @books_uk;
 

@@ -1,5 +1,8 @@
 Revision history for Perl extension WWW::Amazon::Wishlist.
 
+1.3   Fri Oct 15 16:24:47 BST 2004
+	- Fixes from Martin Thurn
+
 1.2   Wed Sep  8 16:32:28 BST 2004
     - Fix UK template layout
 
@@ -27,7 +30,7 @@ Revision history for Perl extension WWW::Amazon::Wishlist.
       some stuff.
 
 0.7   Wed Feb 27 13:10:56 2002
-	- there was some curft creeping in if it was a DVD.
+	- there was some cruft creeping in if it was a DVD.
 	  All fixed now :)
 
 0.66  Tue Dec 18 17:28:54 2001

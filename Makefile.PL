@@ -8,6 +8,7 @@ WriteMakefile
                            'Carp' => '0',
                            'Getopt::Long' => '0',
                            'LWP' => '0',
+						   'Test::More' => 0,
                            'Template::Extract' => '0'
                          },
           'INSTALLDIRS' => 'site',
