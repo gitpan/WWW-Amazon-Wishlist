@@ -4,6 +4,6 @@ use ExtUtils::MakeMaker;
 WriteMakefile(
     'NAME'	   => 'WWW::Amazon::Wishlist',
     'VERSION_FROM' => 'Wishlist.pm', # finds $VERSION
-    'PREREQ_PM'    => { 'LWP' => 0, 'Getopt::Long' => 0 },
+    'PREREQ_PM'    => { 'LWP' => 0, 'Getopt::Long' => 0, HTML::TokeParser => 0, Carp => 0 },
     'EXE_FILES' => [ 'amazonwish' ],
 );

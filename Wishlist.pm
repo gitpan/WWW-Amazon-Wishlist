@@ -3,6 +3,7 @@ package WWW::Amazon::Wishlist;
 use strict;
 use vars qw($VERSION @ISA @EXPORT @EXPORT_OK);
 use LWP::UserAgent;
+use HTML::TokeParser;
 use Carp;
 
 use constant COM => 0;
@@ -16,17 +17,17 @@ require AutoLoader;
 # names by default without a very good reason. Use EXPORT_OK instead.
 # Do not simply export all your public functions/methods/constants.
 @EXPORT = qw(
-	
+	     
 );
 
 @EXPORT_OK = qw(
-	get_list
+		get_list
         UK
         COM
 );
 
 
-$VERSION = '0.7';
+$VERSION = '0.8';
 
 
 =pod
@@ -53,11 +54,11 @@ WWW::Amazon::Wishlist - grab all the details from your Amazon wishlist
   # the elements of @wishlist are hashrefs that contain ...
   foreach my $book (@wishlist)
   {
-  	print $book->{title},   # the, err, title
-	      $book->{author},  # and the author(s) 
-	      $book->{asin},    # the asin number, its unique id on Amazon
-	      $book->{price},	# how much it will set you back
-	      $book->{type};    # Hardcover/Paperback/CD/DVD etc
+print $book->{title},   # the, err, title
+      $book->{author},  # and the author(s) 
+      $book->{asin},    # the asin number, its unique id on Amazon
+$book->{price},# how much it will set you back
+      $book->{type};    # Hardcover/Paperback/CD/DVD etc
   
   }
  
@@ -96,12 +97,11 @@ Either that or you have the adress of my Amazon Wishlist, it's huge, buy somethi
 
 It doesn't parse other fields from the wishlist such as number wanted, date added, how long to ship and user comment.
 
-I haven't ported my (broken) amazon wishlist totalling script from http://www.twoshortplanks.com/simon/stuff/amazon to use this instead.
-
-I haven't been able to get a multi-paginated wishlist on amazon.co.uk so I can't test that it will go grab more than
-one page.
-
 It doesn't cope with anything apart from .co.uk and .com yet. Probably.
+
+I don't think it likes unavailable items.
+
+The code has accumulated lots of cruft.
 
 Lack of testing. It works for the pages I've tried it for but that's no guarantee.
 
@@ -127,83 +127,204 @@ L<perl>, L<LWP::UserAgent>, L<amazonwish>
 # does exactly what it says on the tin
 sub get_list 
 {
-	my ($id, $uk) = @_;
-	
-	# bad bad bad
-	unless (defined $id)
-	{
-		croak "No ID given to get_list function\n";
-		return undef;
-	}
+my ($id, $uk) = @_;
 
-	# note to self ... should we UC the id? Nahhhh. Not yet.
+# bad bad bad
+unless (defined $id)
+{
+	croak "No ID given to get_list function\n";
+	return undef;
+}
 
-	# default is amazon.com	
-	$uk |= 0;
-	
-	
-	# fairly self explanatory
-	my $domain = ($uk)? "co.uk" : "com";
+# note to self ... should we UC the id? Nahhhh. Not yet.
+
+# default is amazon.com
+$uk |= 0;
 
 
-	my $ua = new LWP::UserAgent;
-	
-	# for some reason we need to fake this *cough*
-	# probably to explicitly stop screen scraping
-	$ua->agent('Mozilla/5.0');
+# fairly self explanatory
+my $domain = ($uk)? "co.uk" : "com";
 
 
-	# set up some variables
-	my $page    = 1;
-	my $oldpage = 0;
-	my @books;
-	
-	# and awaaaaaaaaaaaaay we go ....
-	while (1)
-	{
-        	
+
+my $ua = new LWP::UserAgent;
+
+# for some reason we need to fake this *cough*
+# probably to explicitly stop screen scraping
+$ua->agent('Mozilla/5.0');
+
+
+# set up some variables
+my $page    = 1;
+my $oldpage = 0;
+my @books;
+
+# and awaaaaaaaaaaaaay we go ....
+while (1)
+{
+
 
      
 
-		 # this should be explanatory also 
-		 my $url      =  "http://www.amazon.$domain/exec/obidos/wishlist/$id/?registry.page-number=$page";
-		 my $request  =  HTTP::Request->new ( 'GET',$url );
-        	 my $response =  $ua->request($request);
-		 	
-		 # also bad, let's just give up
-		 if (!$response->is_success) {
-		 	 croak "Couldn't get page '$url'\n";
-			 return undef;
-		 }
+ # this should be explanatory also 
+ my $url      =  "http://www.amazon.$domain/exec/obidos/wishlist/$id/?registry.page-number=$page";
+ my $request  =  HTTP::Request->new ( 'GET',$url );
+ my $response =  $ua->request($request);
+
+ # also bad, let's just give up
+ if (!$response->is_success) {
+ croak "Couldn't get page '$url'\n";
+ return undef;
+ }
 
 
-		# get the goods
-		my $content = $response->content;
-		push @books, extract_books ($content, $uk );
+# get the goods
+my $content = $response->content;
 
-		$oldpage = $page;
-
-		# check to see if there's another page to go to 
-        	if ($content =~ /registry.page-number=(\d+).*button-more-results/) 
-		{
-			 $page = $1;
-		} 
-
-		
-		# if not then get out of here
-		last unless ($page > $oldpage);
-
-	}
-
-	return @books;
+if ($uk) {
+	push @books, old_extract_books ($content, $uk );
+} else {
+	push @books, extract_books ($content, $uk );
 }
 
 
+$oldpage = $page;
 
+# check to see if there's another page to go to 
+if ($uk) {
+	if ($content =~ /registry.page-number=(\d+).*button-more-results/) 
+	{
+ 		$page = $1;
+	} 
+} else {
+	if ($content =~ /registry.page-number=(\d+).*Next/) 
+	{
+		$page = $1;
+	} 
+}
 
-# does the extractering and stuff, like
+# if not then get out of here
+last unless ($page > $oldpage);
+
+}
+
+return @books;
+}
+
+# Return an Array of hash refs. Each hash is 
+# asin title author type price  
 sub extract_books
 {
+    my ($page, $uk) = @_;
+    
+    # default is .com. Shouldn't be needed but I'm paranoid
+    $uk |= 0;
+
+    my @books;
+    my %seen;
+    my $currency;
+
+    # set up some stuff to search for later
+    if ($uk)
+    {
+	$currency      = '&pound;';
+    } else {
+	$currency      = '$';
+    }
+
+    my $currency_char = substr $currency, 0, 1;
+
+    my $p = HTML::TokeParser->new(\$page);
+
+    # The reason we have inf loops is that get_tag does not return
+    #  undef like get_token does.
+    my $asin; # This will be set in the <td> before the books name and price.
+    while (my $token = $p->get_token)
+    {
+	my $ttype = shift @{ $token };
+	
+	if($ttype eq "S")    # start tag?
+	{
+	    my($tag, $attr, $attrseq, $rawtxt) = @{ $token };
+	    
+	    if($tag eq "td")
+	    {
+		# We are only interested in things that come 
+		# between <td> and </td>. 
+		my $aToken = $p->get_tag("a"); # Href token
+		my $url = $aToken->[1]{href} || "-";
+
+		# Grab the Amazon Unique ID
+		if($url =~ /ASIN\/([\d\w]{10})\//) {
+		    $asin = $1;
+		}
+		
+		# Now grab the Author and Price.
+		my $text = $p->get_trimmed_text("/td");
+		if ($text =~ /Desired/) {
+		    $token = $p->get_tag("td");
+		    my $price = $p->get_trimmed_text("/td");
+		    # If it is available just get the price. 
+		    if ($price =~ /\Q$currency\E([\d,]+\.\d+)/) {
+			$price = $1;
+			# sort out problems with prices over a grand 
+			$price =~ s/,//g;           
+		    } # Else leave it a string.
+		    else { 
+			#Our Price:  This item is currently unavailable.]
+			$price =~ /Our Price:\W+([\w\s]+)/;
+			$price = $1;
+		    }
+		    
+		    # Get the title. 
+		    my $title = 'TITLE'; #BUGBUG
+		    if ($text =~ /(.+)\s(by|DVD;|VHS;)/) {
+			$title = $1;
+			# Clean up some cruft for VHS and DVD's.
+			#  anything after ~ is the creator.
+			$title =~ s/\s~.*//; 
+			# Remove DVD/VHS type if it is at the end..
+			$title =~ s/\s(DVD|VHS);?$//;
+		    }
+
+		    # Get the author
+ 		    my $author = '';
+ 		    if ($text =~ /(by|~)\s([^;]+);/) {
+ 			$author = $2;
+ 		    }
+
+		    # Get the type
+		    my $type = '';
+		    # The type is between the 1st ; and either the words
+		    # Usualy (as in ships), Out (as in Out of print), or 
+		    # Not (as in Not yet publsihed).
+		    if ($text =~ /[^;]+;\s([\w\s]+)\s(Out|Usually|Not)/) {
+			$type = $1;
+		    } 
+		    # Unless the type is DVD or VHS...
+		    elsif ($text =~ /[^;]+;\s(DVD|VHS);/) {
+			$type = $1;
+		    }
+
+#		    print "[$title] [$author] \n[$type] [$asin]\n[$price]\n\n";
+		    my %book;
+		    @book{qw(asin title author type price)}
+		    = ($asin, $title, $author, $type, $price);
+
+		    # Add this book to the retur structure.
+		    push @books, \%book unless $seen{$book{'asin'}}++;
+		}
+	    }   # End td tag if
+	}     # End if type is S BUGBUG
+    } # end while
+
+    return @books;
+}
+  
+# does the extractering and stuff, like
+sub old_extract_books
+{
+
 	my ($page, $uk) = @_;
 
 	# default is .com. Shouldn't be needed but I'm paranoid
@@ -260,48 +381,47 @@ sub extract_books
 	return @books;
 }
 
-
 # legacy code, should never get called
 # left in here Just In Case [tm]
 sub extract_books_uk
 {
-	my $page = shift;
-	
-
-	
-	my @books;
-		
-	while ($page =~ m!
-			  <i><a\ href=/exec/obidos/ASIN/([^/]+)/[^>]+>
-			  (.+=?)</a></i><br>\n\s*
-			  .+=?\n\s*
-			  (.+=?);\n\s*(.+=?)<br>\n\s*
-			  [^&]+&pound;(\d+.\d+)
-			  !mxgi
-	 	)
-	{
-		
-	
-
-		my %book;	
-		$book{'asin'}   = $1;
-		$book{'title'}  = $2;
-		$book{'author'} = $3;
-		$book{'type'}   = $4;
-		$book{'price'}  = $5;
+my $page = shift;
 
 
-		
-		
+
+my @books;
+
+while ($page =~ m!
+	       <i><a\ href=/exec/obidos/ASIN/([^/]+)/[^>]+>
+	         (.+=?)</a></i><br>\n\s*
+		   .+=?\n\s*
+		     (.+=?);\n\s*(.+=?)<br>\n\s*
+		       [^&]+&pound;(\d+.\d+)
+		         !mxgi
+			 )
+{
 
 
-		push @books, \%book;
-		
-		
-	
-	}	
 
-	return @books;
+my %book;
+$book{'asin'}   = $1;
+$book{'title'}  = $2;
+$book{'author'} = $3;
+$book{'type'}   = $4;
+$book{'price'}  = $5;
+
+
+
+
+
+
+push @books, \%book;
+
+
+
+}
+
+return @books;
 }
 
 1;
