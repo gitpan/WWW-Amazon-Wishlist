@@ -1,5 +1,8 @@
 Revision history for Perl extension WWW::Amazon::Wishlist.
 
+1.4   Sun Nov  7 09:30:29 GMT 2004
+    - More fixes from the fantastic Mr Thurn
+
 1.3   Fri Oct 15 16:24:47 BST 2004
 	- Fixes from Martin Thurn
 
