@@ -60,7 +60,7 @@ print << "EOH";
 -verbose : print out all the titles, authors, price and type as well as totalling it all up
 
 the first time you run the script you must supply the values
-but after that it will save them in .amazon_wishlist in your
+but after that it will save them in .amazon_wish in your
 home directory.
 
 You can overide the resource file by using -force option or the 
@@ -192,7 +192,7 @@ amazonwish - goes and grabs your amazon.(co.uk|com) wishlist and totals it up fo
 -verbose : print out all the titles, authors, price and type as well as totalling it all up
 
 the first time you run the script you must supply the values
-but after that it will save them in .amazon_wishlist in your
+but after that it will save them in .amazon_wish in your
 home directory.
 
 You can overide the resource file by using -force option or the	
