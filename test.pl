@@ -47,6 +47,7 @@ sub print_books
 	{
 		my %book = %{$bookref};
 		print '"'.$book{'title'}.'" by '.$book{'author'}." (".(($uk)?'£':'$').$book{'price'}.") [".$book{'type'}."]<br>\n";
+		#print "urk ",$book{'title'},"\n"  unless $book{'asin'};
 		$total += $book{'price'};
 	}
 

@@ -156,7 +156,7 @@ foreach my $bookref (get_list ($id,  $uk))
 {
                 my %book = %{$bookref};
                 print '"'.$book{'title'}.'" by '.$book{'author'}." (".(($uk)?'£':'$').$book{'price'}.") [".$book{'type'}."]\n" if ($verbose);
-                $total += $book{'price'} unless ($book{'price'} =~ /unavailable/i);
+                $total += $book{'price'} unless (!defined $book{'price'} || $book{'price'} =~ /unavailable/i);
 
 
 } 

@@ -27,7 +27,7 @@ require AutoLoader;
 );
 
 
-$VERSION = '0.85';
+$VERSION = '0.9';
 
 
 =pod
@@ -153,6 +153,11 @@ my $ua = new LWP::UserAgent( keep_alive => 1,
 			   );
 
 
+# setting it in the 'new' seems not to work sometimes
+$ua->agent('Mozilla/5.0');
+
+
+
 # set up some variables
 my $page    = 1;
 my $oldpage = 0;
@@ -263,7 +268,8 @@ sub extract_books
 		my $url = $aToken->[1]{href} || "-";
 
 		# Grab the Amazon Unique ID
-		if($url =~ /ASIN\/([\d\w]{10})\//) {
+		#if($url =~ /ASIN\/([\d\w]{10})\//i) {
+		if ($url=~ m!tg/detail/-/([\d\w]{10})/!i) {
 		    $asin = $1;
 		}
 		

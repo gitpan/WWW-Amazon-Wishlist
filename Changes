@@ -1,6 +1,11 @@
 Revision history for Perl extension WWW::Amazon::Wishlist.
 
 
+0.9   Tue Feb 11 12:30:16 2003
+	- set User Agent again to fix weirdness
+	- ASIN format has changed
+
+
 0.85  Fri Oct 25 17:43:12 2002
 	- Fix some minor bugs
 
