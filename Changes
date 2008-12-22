@@ -1,3 +1,7 @@
+2008-12-21  Kingpin  <Martin@BLUEMAX>
+
+	* lib/WWW/Amazon/Wishlist.pm (get_list): fixed the UK parser; fixed the next-page follower
+
 Revision history for Perl extension WWW::Amazon::Wishlist.
 
 1.4   Sun Nov  7 09:30:29 GMT 2004

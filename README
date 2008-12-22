@@ -1,15 +1,5 @@
 WWW::Amazon::Wishlist - grab details from an Amazon wishlist
 
-------------------------------------------
-IMPORTANT NOTE ABOUT INTERIM RELEASE 1.501
-------------------------------------------
-
-Release of distribution version 1.501 was made by Martin Thurn, with Simon's permission of course.
-However, at the moment, the UK parse code is not working.
-Also, at the moment, it is not able to look beyond the first page of your wishlist.
-We apologize for these shortcomings, and we will work on them "real soon now".  
-We also apologize that this release was not in time to help you get ready for Christmas.
-
 -----------------------------------
 INSTALLATION
 -----------------------------------
@@ -34,6 +24,7 @@ DESCRIPTION
 
 Goes to Amazon.(com|co.uk) and scrapes away your wishlist and returns it in a array of hashrefs so that you can fiddle with it until your hearts content.
 
+Note: Items marked as "currently unavailable" are not returned.  (This may be considered a bug...)
 
 -----------------------------------
 SHOWING YOUR APPRECIATION

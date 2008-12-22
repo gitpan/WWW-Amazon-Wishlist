@@ -1,5 +1,5 @@
 
-# $Id: amazon.co.uk.t,v 1.2 2008/12/22 01:51:48 Martin Exp $
+# $Id: amazon.co.uk.t,v 1.3 2008/12/22 02:44:43 Martin Exp $
 
 use strict;
 use warnings;
@@ -17,11 +17,7 @@ my $sCode = '108ACFCI5OK8I';
 my @arh = get_list($sCode, UK);
 my $iCount = scalar(@arh);
 diag(qq{$sCode\'s wishlist at .UK has $iCount items});
-TODO:
-  {
-  local $TODO = 'need to fix the UK parser';
-  ok($iCount, 'not an empty list');
-  } # end of TODO block
+ok($iCount, 'not an empty list');
 if (0)
   {
   use Data::Dumper;

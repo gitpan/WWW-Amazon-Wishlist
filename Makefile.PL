@@ -1,5 +1,5 @@
 
-# $Id: Makefile.PL,v 1.2 2008/12/22 01:52:56 Martin Exp $
+# $Id: Makefile.PL,v 1.3 2008/12/22 02:26:59 Martin Exp $
 
 use inc::Module::Install;
 
@@ -9,7 +9,8 @@ install_script('Programs/amazonwish');
 
 requires('Carp');
 requires('Getopt::Long');
-requires('LWP');
+requires('HTML::TreeBuilder');
+requires('LWP::UserAgent');
 test_requires('Test::More');
 
 WriteAll;

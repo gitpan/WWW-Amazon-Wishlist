@@ -1,5 +1,5 @@
 
-# $Id: amazon.com.t,v 1.2 2008/12/22 01:52:02 Martin Exp $
+# $Id: amazon.com.t,v 1.3 2008/12/22 02:44:55 Martin Exp $
 
 use strict;
 use warnings;
@@ -12,8 +12,10 @@ BEGIN
   use_ok('WWW::Amazon::Wishlist', qw(get_list COM));
   }
 
-# I think this is Simon's:
+# I think this is Simon's, it has at least 18 pages!!!:
 my $sCode = '2EAJG83WS7YZM';
+# This is Martin's, it has two pages:
+$sCode = '2O4B95NPM1W3L';
 # ok(get_list ($sCode, COM, 1), "Got any items from .com");
 my @arh = get_list($sCode, COM);
 my $iCount = scalar(@arh);

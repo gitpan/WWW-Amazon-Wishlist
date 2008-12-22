@@ -2,8 +2,10 @@ package WWW::Amazon::Wishlist;
 
 use strict;
 use vars qw($VERSION @ISA @EXPORT @EXPORT_OK);
-use LWP::UserAgent;
+
 use Carp;
+use HTML::TreeBuilder;
+use LWP::UserAgent;
 
 use constant COM => 0;
 use constant UK  => 1;
@@ -15,7 +17,6 @@ require Exporter;
 # names by default without a very good reason. Use EXPORT_OK instead.
 # Do not simply export all your public functions/methods/constants.
 @EXPORT = qw(
-         
 );
 
 @EXPORT_OK = qw(
@@ -25,7 +26,7 @@ require Exporter;
 );
 
 
-$VERSION = '1.501';  # By Martin Thurn 2008-12-21
+$VERSION = '1.6';  # By Martin Thurn 2008-12-21
 
 
 =pod
@@ -172,12 +173,12 @@ sub get_list
     {
 
         # this should be explanatory also 
-        my $url = ($uk) ? "http://www.amazon.co.uk/exec/obidos/registry/$id/?registry.page-number=$page" :
-                          "http://www.amazon.com/gp/registry/wishlist/$id";
+        my $url = ($uk) ? "http://www.amazon.co.uk/gp/registry/wishlist/$id/?page=$page" :
+                          "http://www.amazon.com/gp/registry/wishlist/$id/?page=$page";
         # This is a typical complete .com URL as of 2008-12:
         # http://www.amazon.com/gp/registry/wishlist/2O4B95NPM1W3L
 
-        # print STDERR " DDD fetching wishlist for $id...\n";
+        DEBUG_HTML && print STDERR " DDD fetching wishlist for $id, page $page...\n";
         my $content = _fetch_page($url, $domain);
 
         if (0)
@@ -205,14 +206,17 @@ sub get_list
             $item->{'author'} =~ s!</span></b><br />\n*!!s;
             $item->{'quantity'} = $1 if ($item->{'priority'} =~ m!Desired:\s*</b>\s*(\d+)!i);
             $item->{'priority'} = $1 if ($item->{'priority'} =~ m!Priority:\s*</b>\s*(\d)!i);
-            if ($uk && $item->{image} !~ m!^http:!) {
-                $item->{image} = "http://images-eu.amazon.com/images/P/".$item->{image};
-            } # if
+            if ($uk && $item->{image} && 
+                ($item->{image} !~ m!^http:!)
+               )
+              {
+              $item->{image} = q"http://images-eu.amazon.com/images/P/". $item->{image};
+              } # if
 
             push @items, $item;
         } # foreach ITEM
 
-        my ($next) = ($content =~  m!&page=(\d)+">Next!s);
+        my ($next) = ($content =~  m!&(?:amp;)?page=(\d+)">Next!s);
 
         # for debug purposes
         last if $test;
@@ -239,9 +243,11 @@ sub _fetch_page
     my ($url, $domain) = @_;
     if (0)
       {
-      # For debugging USA site:
       use File::Slurp;
-      return read_file('Pages/2008-12.htm');
+      # For debugging UK site:
+      return read_file('Pages/uk-2008-12-page1.html');
+      # For debugging USA site:
+      return read_file('Pages/2008-12.html');
       } # if 0
     # Setting up the UA here is slower but makes the code easier to read
     # really, the slow bit will not be setting up the UA each time
@@ -309,11 +315,10 @@ sub _extract
   my $s = shift || '';
   DEBUG_HTML && print STDERR " DDD start _extract()\n";
   my $rh;
-  use HTML::TreeBuilder;
   my $oTree = new HTML::TreeBuilder;
   $oTree->parse($s);
   $oTree->eof;
-  my @aoSPAN = $oTree->look_down(_tag => 'span',
+  my @aoSPAN = $oTree->look_down(_tag => $iUK ? 'td' : 'span',
                                  class => 'small',
                                 );
  SPAN_TAG:
