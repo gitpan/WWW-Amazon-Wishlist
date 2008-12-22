@@ -10,6 +10,8 @@ use LWP::UserAgent;
 use constant COM => 0;
 use constant UK  => 1;
 
+use constant DEBUG_HTML => 0;
+
 require Exporter;
 
 @ISA = qw(Exporter);
@@ -26,7 +28,7 @@ require Exporter;
 );
 
 
-$VERSION = '1.6';  # By Martin Thurn 2008-12-21
+$VERSION = '1.601';  # By Martin Thurn 2008-12-22
 
 
 =pod
@@ -302,8 +304,6 @@ sub _fetch_page
     return $response->content;
 
 } # _fetch_page
-
-use constant DEBUG_HTML => 0;
 
 # This is the HTML parsing version written by Martin Thurn:
 
