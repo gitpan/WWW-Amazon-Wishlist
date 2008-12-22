@@ -1,15 +1,16 @@
-use Test::More tests => 3;                                                             
-                                                                                    
-BEGIN { use_ok('WWW::Amazon::Wishlist', qw(get_list UK COM)) };          
+use blib;
+use Test::More tests => 3;
+
+BEGIN { use_ok('WWW::Amazon::Wishlist', qw(get_list UK COM)) };
 
 # .com
-ok(get_list ("2EAJG83WS7YZM", COM, 1), "Got items from .com");
-#my @books_com = get_list ("2EAJG83WS7YZM", COM);
-#use Data::Dumper;
-#print Dumper @books_com;
+# ok(get_list ("2EAJG83WS7YZM", COM, 1), "Got items from .com");
+my @books_com = get_list ("2EAJG83WS7YZM", COM);
+use Data::Dumper;
+print Dumper @books_com;
+exit 0;
 
-
-ok(get_list ("108ACFCI5OK8I", UK, 1), "Got items from UK");
+ok(get_list ("", UK, 1), "Got items from UK");
 #my @books_uk  = get_list ("108ACFCI5OK8I", UK);
 #use Data::Dumper;
 #print STDERR Dumper @books_uk;

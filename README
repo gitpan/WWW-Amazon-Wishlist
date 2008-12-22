@@ -1,88 +1,48 @@
-WWW::Amazon::Wishlist - grab all the details from your Amazon wishlist
+WWW::Amazon::Wishlist - grab details from an Amazon wishlist
+
+------------------------------------------
+IMPORTANT NOTE ABOUT INTERIM RELEASE 1.501
+------------------------------------------
+
+Release of distribution version 1.501 was made by Martin Thurn, with Simon's permission of course.
+However, at the moment, the UK parse code is not working.
+Also, at the moment, it is not able to look beyond the first page of your wishlist.
+We apologize for these shortcomings, and we will work on them "real soon now".  
+We also apologize that this release was not in time to help you get ready for Christmas.
 
 -----------------------------------
-INSTALL
+INSTALLATION
 -----------------------------------
 
-
-the usual ...
+The usual ...
 
 % perl Makefile.PL
-% make
 % make test
 % make install
 
-Remember peeps, It's bad to do 'make test' as root. In fact, try to do as 
-little as possible as root. Only do the 'make install' as root. Root is bad. 
-Root is scary. Tree pretty. Beer Foamy. Fire bad.
+Remember peeps, It's bad to do 'make test' as root.  In fact, try to do as 
+little as possible as root.  Only do the 'make install' as root.  Root is bad. 
+Root is scary.  Tree pretty.  Beer Foamy.  Fire bad.
 
 You have been warned.
 
-It also installs a utility called amazonwish which will grab your amazon wishlist for you and total it up.
-
------------------------------------
-SYNOPSIS
------------------------------------
-
-
-  use WWW::Amazon::Wishlist qw(get_list);
-  
-  my @wishlist;
-  
-  @wishlist = get_list ($my_amazon_com_id);      # gets it from amazon.com
-  @wishlist = get_list ($my_amazon_com_id,  0);  # same, explicitly
-  @wishlist = get_list ($my_amazon_couk_id, 1);  # gets it from amazon.co.uk
-  
-  # the elements of @wishlist are hashrefs that contain ...
-  foreach my $book (@wishlist)
-  {
-  	print $book->{title},   # the, err, title
-	      $book->{author},  # and the author(s) 
-	      $book->{asin},    # the asin number, its unique id on Amazon
-	      $book->{price},	# how much it will set you back
-	      $book->{type};    # Hardcover/Paperback/CD/DVD etc
-  
-  }
-  
-
-  
-  
+It also installs a utility called amazonwish, which will grab your amazon wishlist for you and total it up.
 
 -----------------------------------
 DESCRIPTION
 -----------------------------------
 
-
 Goes to Amazon.(com|co.uk) and scrapes away your wishlist and returns it in a array of hashrefs so that you can fiddle with it until your hearts content.
-
-
------------------------------------
-GETTING YOUR AMAZON ID
------------------------------------
-
-
-The best way to do this is to search for your own wishlist in the search tools.
-
-Searching for mine (simon@twoshortplanks.com) on amazon.com takes me to the URL
-
-   http://www.amazon.com/exec/obidos/wishlist/2EAJG83WS7YZM/ 
- 
-there's some more cruft after that last string of numbers and letters but it's the
-
-   2EAJG83WS7YZM
-   
-bit that's important.
-
-Doing the same for amazon.co.uk is just as easy.
-
 
 
 -----------------------------------
 SHOWING YOUR APPRECIATION
 -----------------------------------
 
-There was a thread on london.pm mailing list about working in a vacumn - that it was a bit depressing to keep writing
-modules but never get any feedback. So, if you use and like this module then please send me an email and make my day. 
+There was a thread on london.pm mailing list about working in a vacuum
+- that it was a bit depressing to keep writing modules but never get
+any feedback. So, if you use and like this module then please send me
+an email and make my day.
 
 All it takes is a few little bytes.
 
