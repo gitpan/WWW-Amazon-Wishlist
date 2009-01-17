@@ -1,6 +1,10 @@
-2008-12-21  Kingpin  <Martin@BLUEMAX>
+2008-12-22  Kingpin  <Martin@BLUEMAX>
 
 	* lib/WWW/Amazon/Wishlist.pm (get_list): fixed the UK parser; fixed the next-page follower
+
+2008-12-21  Kingpin  <Martin@BLUEMAX>
+
+	* lib/WWW/Amazon/Wishlist.pm (get_list): total rewrite using HTML::TreeBuilder
 
 Revision history for Perl extension WWW::Amazon::Wishlist.
 

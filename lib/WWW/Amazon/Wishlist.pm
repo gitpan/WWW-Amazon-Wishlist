@@ -28,7 +28,7 @@ require Exporter;
 );
 
 
-$VERSION = '1.601';  # By Martin Thurn 2008-12-22
+$VERSION = '1.602';  # By Martin Thurn 2009-01-17
 
 
 =pod
@@ -185,7 +185,7 @@ sub get_list
 
         if (0)
           {
-          use File::Slurp;
+          eval "use File::Slurp";
           write_file('PAGES/fetched.html', $content);
           exit 88;
           } # if
@@ -245,7 +245,7 @@ sub _fetch_page
     my ($url, $domain) = @_;
     if (0)
       {
-      use File::Slurp;
+      eval "use File::Slurp";
       # For debugging UK site:
       return read_file('Pages/uk-2008-12-page1.html');
       # For debugging USA site:
