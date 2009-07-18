@@ -4,6 +4,7 @@ use strict;
 use vars qw($VERSION @ISA @EXPORT @EXPORT_OK);
 
 use Carp;
+use Data::Dumper;
 use HTML::TreeBuilder;
 use LWP::UserAgent;
 
@@ -27,8 +28,8 @@ require Exporter;
         COM
 );
 
-
-$VERSION = '1.602';  # By Martin Thurn 2009-01-17
+our
+$VERSION = do { my @r = (q$Revision: 2.1 $ =~ /\d+/g); sprintf "%d."."%03d" x $#r, @r };
 
 
 =pod
@@ -145,99 +146,79 @@ L<perl>, L<LWP::UserAgent>, L<amazonwish>
 my $USER_AGENT = 'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)';
 
 sub get_list
-{
-    my ($id, $uk, $test) = @_;
-
-    # bad bad bad
-    unless (defined $id)
+  {
+  my ($id, $uk, $test) = @_;
+  if (! defined $id)
     {
-        croak "No ID given to get_list function\n";
-        return undef;
-    }
-
-    # note to self ... should we UC the id? Nahhhh. Not yet.
-
-    # default is amazon.com
-    $uk |= 0;
-
-    $test |= 0;
-
-    # fairly self explanatory
-    my $domain = ($uk)? "co.uk" : "com";
-
-
-    # set up some variables
-    my $page    = 1;
-    my @items;
-
-    # and awaaaaaaaaaaaaay we go ....
-    while (1)
+    croak "No ID given to get_list function\n";
+    return undef;
+    } # if
+  # note to self ... should we UC the id? Nahhhh. Not yet.
+  # Default is amazon.com:
+  $uk |= 0;
+  $test |= 0;
+  # fairly self explanatory
+  my $domain = ($uk)? "co.uk" : "com";
+  # set up some variables
+  my $page    = 1;
+  my @items;
+  # and awaaaaaaaaaaaaay we go ....
+ INFINITE:
+  while (1)
     {
-
-        # this should be explanatory also 
-        my $url = ($uk) ? "http://www.amazon.co.uk/gp/registry/wishlist/$id/?page=$page" :
-                          "http://www.amazon.com/gp/registry/wishlist/$id/?page=$page";
-        # This is a typical complete .com URL as of 2008-12:
-        # http://www.amazon.com/gp/registry/wishlist/2O4B95NPM1W3L
-
-        DEBUG_HTML && print STDERR " DDD fetching wishlist for $id, page $page...\n";
-        my $content = _fetch_page($url, $domain);
-
-        if (0)
-          {
-          eval "use File::Slurp";
-          write_file('PAGES/fetched.html', $content);
-          exit 88;
-          } # if
-        my $iLen = length($content);
-        # print STDERR " DDD fetched $iLen bytes.\n";
-        return undef unless ($content);
-
-        # print STDERR " DDD call _extract()\n";
-        my $result = _extract($uk, $content);
-
-        #use Data::Dumper;
-        #print Dumper($result);
-        last unless defined $result && $result->{items};
-
+    my $url = $uk ? "http://www.amazon.co.uk/gp/registry/wishlist/$id/?page=$page" :
+    "http://www.amazon.com/gp/registry/wishlist/$id/?page=$page";
+    # This is a typical complete .com URL as of 2008-12:
+    # http://www.amazon.com/gp/registry/wishlist/2O4B95NPM1W3L
+    DEBUG_HTML && print STDERR " DDD fetching wishlist for $id, page $page...\n";
+    my $content = _fetch_page($url, $domain);
+    if (0)
+      {
+      eval "use File::Slurp";
+      write_file('PAGES/fetched.html', $content);
+      exit 88;
+      } # if
+    my $iLen = length($content);
+    # print STDERR " DDD fetched $iLen bytes.\n";
+    return undef unless ($content);
+    # print STDERR " DDD call _extract()\n";
+    my $result = _extract($uk, $content);
+    # print Dumper($result);
+    # exit 88;
+    last INFINITE if (! defined $result && $result->{items});
  ITEM:
-        foreach my $item (@{$result->{items}})
+    foreach my $item (@{$result->{items}})
+      {
+      $item->{'author'} =~ s!\n!!g;
+      $item->{'author'} =~ s!^\s*by\s+!!g;
+      $item->{'author'} =~ s!</span></b><br />\n*!!s;
+      $item->{'quantity'} = $1 if ($item->{'priority'} =~ m!Desired:\s*</b>\s*(\d+)!i);
+      $item->{'priority'} = $1 if ($item->{'priority'} =~ m!Priority:\s*</b>\s*(\d)!i);
+      if (
+          $uk
+          &&
+          $item->{image}
+          &&
+          ($item->{image} !~ m!^http:!)
+         )
         {
-            $item->{'author'} =~ s!\n!!g;
-            $item->{'author'} =~ s!^\s*by\s+!!g;
-            $item->{'author'} =~ s!</span></b><br />\n*!!s;
-            $item->{'quantity'} = $1 if ($item->{'priority'} =~ m!Desired:\s*</b>\s*(\d+)!i);
-            $item->{'priority'} = $1 if ($item->{'priority'} =~ m!Priority:\s*</b>\s*(\d)!i);
-            if ($uk && $item->{image} && 
-                ($item->{image} !~ m!^http:!)
-               )
-              {
-              $item->{image} = q"http://images-eu.amazon.com/images/P/". $item->{image};
-              } # if
-
-            push @items, $item;
-        } # foreach ITEM
-
-        my ($next) = ($content =~  m!&(?:amp;)?page=(\d+)">Next!s);
-
-        # for debug purposes
-        last if $test;
-
-         # UK doesn't seem to split up over pages
-        # paranoia
-        last unless defined $next;
-
-        # more paranoia
-        last unless $next > $page;
-
-        # and update
-        $page    = $next;
-
+        $item->{image} = q"http://images-eu.amazon.com/images/P/". $item->{image};
+        } # if
+      push @items, $item;
+      } # foreach ITEM
+    my ($next) = ($content =~  m!&(?:amp;)?page=(\d+)">Next!s);
+    # for debug purposes
+    last INFINITE if $test;
+    # UK doesn't seem to split up over pages
+    # paranoia
+    last INFINITE if ! defined $next;
+    # More paranoia:
+    last INFINITE if ($next <= $page);
+    # and update
+    $page    = $next;
     } # while
-
-
-    return @items;
-} # get_list
+  return @items;
+  } # get_list
 
 
 sub _fetch_page
@@ -376,18 +357,23 @@ sub _extract
     # Find the quantity desired, and the priority.  These are the defaults:
     my $iDesired = 1;
     my $sPriority = 'medium';
-    my @aoSPAN = $oParent->look_down(_tag => 'span',
-                                     class => 'wl-iter-heading',
+    # my @aoSPAN = $oParent->look_down(_tag => 'span',
+    #                                  class => 'wl-iter-heading',
+    #                                 );
+    my @aoSPAN = $oParent->look_down(_tag => 'td',
+                                     class => 'tiny',
                                     );
  SPAN_TAG:
     foreach my $oSPAN (@aoSPAN)
       {
       next SPAN_TAG unless ref $oSPAN;
-      if ($oSPAN->as_text =~ m'DESIRED\s+(/d+)'i)
+      my $sSpan = $oSPAN->as_text;
+      DEBUG_HTML && print STDERR " DDD   span=$sSpan=\n";
+      if ($sSpan =~ m'DESIRED(/d+)')
         {
         $iDesired = $1;
         } # if
-      if ($oSPAN->as_text =~ m'PRIORITY\s+(/d+)'i)
+      if ($sSpan =~ m'PRIORITY(.+)\z')
         {
         $sPriority = $1;
         } # if
@@ -473,6 +459,7 @@ sub _extract
                   title => $sTitle,
                   # type => $sType,
                  );
+    DEBUG_HTML && print STDERR Dumper(\%hsItem);
     push @{$rh->{items}}, \%hsItem;
     # All done with this item:
     $oTable->detach;

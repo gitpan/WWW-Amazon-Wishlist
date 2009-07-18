@@ -1,5 +1,5 @@
 
-# $Id: amazon.com.t,v 1.3 2008/12/22 02:44:55 Martin Exp $
+# $Id: amazon.com.t,v 2.1 2009-07-18 23:33:08 Martin Exp $
 
 use strict;
 use warnings;
@@ -21,11 +21,22 @@ my @arh = get_list($sCode, COM);
 my $iCount = scalar(@arh);
 diag(qq{$sCode\'s wishlist at .COM has $iCount items});
 ok($iCount, 'not an empty list');
+cmp_ok(10, q{<}, $iCount, q{got at least 10 items}); # }); # Emacs bug
 if (0)
   {
   use Data::Dumper;
   print STDERR Dumper(\@arh);
   } # if
+# Gather up all the unique priorities we found:
+my %hsi;
+foreach my $rh (@arh)
+  {
+  $hsi{$rh->{priority}}++;
+  } # foreach
+foreach my $sRank (qw( highest high medium ))
+  {
+  ok($hsi{$sRank}, qq{got at least one $sRank priority item});
+  } # foreach
 
 # This is an empty wishlist:
 $sCode = '3MGZN132X8XV1';
