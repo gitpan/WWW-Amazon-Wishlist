@@ -1,3 +1,6 @@
+
+# $Id: Wishlist.pm,v 2.2 2009-08-14 22:06:19 Martin Exp $
+
 package WWW::Amazon::Wishlist;
 
 use strict;
@@ -29,7 +32,7 @@ require Exporter;
 );
 
 our
-$VERSION = do { my @r = (q$Revision: 2.1 $ =~ /\d+/g); sprintf "%d."."%03d" x $#r, @r };
+$VERSION = do { my @r = (q$Revision: 2.2 $ =~ /\d+/g); sprintf "%d."."%03d" x $#r, @r };
 
 
 =pod
@@ -172,6 +175,8 @@ sub get_list
     # http://www.amazon.com/gp/registry/wishlist/2O4B95NPM1W3L
     DEBUG_HTML && print STDERR " DDD fetching wishlist for $id, page $page...\n";
     my $content = _fetch_page($url, $domain);
+    # As of 2009-08, Amazon returns HTML with MISSING BRACKETS:
+    $content =~ s/(<tbody\s[^>\r\n]+)(\s+<)/$1>\n$2/g;
     if (0)
       {
       eval "use File::Slurp";
@@ -299,9 +304,12 @@ sub _extract
   my $oTree = new HTML::TreeBuilder;
   $oTree->parse($s);
   $oTree->eof;
-  my @aoSPAN = $oTree->look_down(_tag => $iUK ? 'td' : 'span',
-                                 class => 'small',
-                                );
+  my @aoSPAN = $iUK ? $oTree->look_down(_tag => 'td',
+                                        class => 'small',
+                                       )
+                    : $oTree->look_down(_tag => 'span',
+                                        class => 'small productTitle',
+                                       );
  SPAN_TAG:
   foreach my $oSPAN (@aoSPAN)
     {
@@ -336,18 +344,12 @@ sub _extract
       }
     DEBUG_HTML && print STDERR " DDD   ASIN ==$sASIN==\n";
     # Grab the smallest-containing ancestor of this item:
-    my $oTable = $oSPAN->look_up(_tag => 'table');
-    if (! ref $oTable)
-      {
-      DEBUG_HTML && print STDERR " WWW did not find ancestor table\n";
-      next SPAN_TAG;
-      } # if
-    my $sTable = $oTable->as_text;
-    # DEBUG_HTML && print STDERR " DDD   child sTable ==$sTable==\n";
-    my $oParent = $oTable->look_up(_tag => 'tr');
+    my $oParent = $oSPAN->look_up(_tag => 'tbody',
+                                 class => 'itemWrapper',
+                                );
     if (! ref $oParent)
       {
-      DEBUG_HTML && print STDERR " WWW did not find ancestor TR\n";
+      DEBUG_HTML && print STDERR " WWW did not find ancestor TBODY\n";
       next SPAN_TAG;
       } # if
     my $sParent = $oParent->as_text;
@@ -369,13 +371,15 @@ sub _extract
       next SPAN_TAG unless ref $oSPAN;
       my $sSpan = $oSPAN->as_text;
       DEBUG_HTML && print STDERR " DDD   span=$sSpan=\n";
-      if ($sSpan =~ m'DESIRED(/d+)')
+      if ($sSpan =~ m'DESIRED(\d+)')
         {
         $iDesired = $1;
+        DEBUG_HTML && print STDERR " DDD     desired=$iDesired=\n";
         } # if
       if ($sSpan =~ m'PRIORITY(.+)\z')
         {
         $sPriority = $1;
+        DEBUG_HTML && print STDERR " DDD     priority=$sPriority=\n";
         } # if
       } # foreach SPAN_TAG
     if (! $iDesired || ! $sPriority)
@@ -415,16 +419,23 @@ sub _extract
       }
 
     # Find the "author" of this item:
-    my @aoTD = $oTable->look_down(_tag => 'td',
-                                  class => 'small',
-                                 );
+    my @aoTD = $iUK ? $oParent->look_down(_tag => 'td',
+                                          class => 'small',
+                                         )
+                    : $oParent->look_down(_tag => 'span',
+                                          sub
+                                            {
+                                            my $s = $_[0]->attr('class') || q{};
+                                            $s =~ m'BYLINE'i;
+                                            },
+                                         );
     my $sAuthor = '';
  TD_TAG:
     foreach my $oTD (@aoTD)
       {
       next TD_TAG unless ref $oTD;
       $s = $oTD->as_text;
-      if ($s =~ s!\A\s*by\s+!!)
+      if ($s =~ s!\A\s*(by|~)\s+!!)
         {
         $sAuthor = $s;
         last TD_TAG;
@@ -433,21 +444,29 @@ sub _extract
     DEBUG_HTML && print STDERR " DDD   author=$sAuthor=\n";
     # Find the price of this item:
     my $sPrice = '';
-    my $oTDprice = $oTable->look_down(_tag => 'span',
-                                      class => 'price',
-                                     );
+    my $oTDprice = $oParent->look_down(_tag => 'span',
+                                       sub
+                                         {
+                                         my $s = $_[0]->attr('class') || q{};
+                                         $s =~ m'PRICE'i;
+                                         },
+                                      );
     if (! ref $oTDprice)
       {
       DEBUG_HTML && print STDERR " WWW did not find TD for price\n";
-      next SPAN_TAG;
+      # print STDERR $oParent->as_HTML;
+      # exit 88;
+      # next SPAN_TAG;
       } # if
-    my $sTD = $oTDprice->as_text;
-    # DEBUG_HTML && print STDERR " DDD   sTD==$sTD==\n";
-    if ($sTD =~ m!Price:\s+(.+)\Z!)
+    else
       {
-      $sPrice = $1;
+      $sPrice = $oTDprice->as_text;
+      if ($sPrice =~ m!Price:\s+(.+)\Z!)
+        {
+        $sPrice = $1;
+        } # if
       DEBUG_HTML && print STDERR " DDD   price=$sPrice=\n";
-      } # if
+      } # else
     # Add this item to the result set:
     my %hsItem = (
                   asin => $sASIN,
@@ -462,8 +481,8 @@ sub _extract
     DEBUG_HTML && print STDERR Dumper(\%hsItem);
     push @{$rh->{items}}, \%hsItem;
     # All done with this item:
-    $oTable->detach;
-    $oTable->delete;
+    $oParent->detach;
+    $oParent->delete;
     } # foreach SPAN_TAG
   return $rh;
   } # _extract
