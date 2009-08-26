@@ -1,3 +1,16 @@
+2009-08-26  Kingpin  <Martin@BLUEMAX>
+
+	* lib/WWW/Amazon/Wishlist.pm (_extract): strip extra spaces from titles
+
+	* Programs/amazonwish: fixed a warning
+
+	* lib/WWW/Amazon/Wishlist.pm (_extract): fixed the next-url parser
+
+2009-08-15  Kingpin  <Martin@BLUEMAX>
+
+	* lib/WWW/Amazon/Wishlist.pm (get_list): fixed the author parser
+	(get_list): sleep to avoid overwhelming the server
+
 2009-08-14  Kingpin  <Martin@BLUEMAX>
 
 	* lib/WWW/Amazon/Wishlist.pm (_extract): fixed the parser

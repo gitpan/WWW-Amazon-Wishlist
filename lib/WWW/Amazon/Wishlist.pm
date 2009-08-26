@@ -1,10 +1,10 @@
 
-# $Id: Wishlist.pm,v 2.2 2009-08-14 22:06:19 Martin Exp $
+# $Id: Wishlist.pm,v 2.6 2009-08-26 22:04:49 Martin Exp $
 
 package WWW::Amazon::Wishlist;
 
 use strict;
-use vars qw($VERSION @ISA @EXPORT @EXPORT_OK);
+use vars qw( @ISA @EXPORT @EXPORT_OK );
 
 use Carp;
 use Data::Dumper;
@@ -14,6 +14,7 @@ use LWP::UserAgent;
 use constant COM => 0;
 use constant UK  => 1;
 
+use constant DEBUG => 0;
 use constant DEBUG_HTML => 0;
 
 require Exporter;
@@ -32,7 +33,7 @@ require Exporter;
 );
 
 our
-$VERSION = do { my @r = (q$Revision: 2.2 $ =~ /\d+/g); sprintf "%d."."%03d" x $#r, @r };
+$VERSION = do { my @r = (q$Revision: 2.6 $ =~ /\d+/g); sprintf "%d."."%03d" x $#r, @r };
 
 
 =pod
@@ -163,20 +164,25 @@ sub get_list
   # fairly self explanatory
   my $domain = ($uk)? "co.uk" : "com";
   # set up some variables
-  my $page    = 1;
+  my $iPage = 1;
   my @items;
   # and awaaaaaaaaaaaaay we go ....
  INFINITE:
   while (1)
     {
-    my $url = $uk ? "http://www.amazon.co.uk/gp/registry/wishlist/$id/?page=$page" :
-    "http://www.amazon.com/gp/registry/wishlist/$id/?page=$page";
+    my $url = $uk ? "http://www.amazon.co.uk/gp/registry/wishlist/$id/?page=$iPage" :
+    "http://www.amazon.com/gp/registry/wishlist/$id/?page=$iPage";
     # This is a typical complete .com URL as of 2008-12:
     # http://www.amazon.com/gp/registry/wishlist/2O4B95NPM1W3L
-    DEBUG_HTML && print STDERR " DDD fetching wishlist for $id, page $page...\n";
+    DEBUG_HTML && print STDERR " DDD fetching wishlist for $id, page $iPage...\n";
+    # Don't overwhelm the server:
+    sleep(3) if (1 < $iPage);
     my $content = _fetch_page($url, $domain);
     # As of 2009-08, Amazon returns HTML with MISSING BRACKETS:
     $content =~ s/(<tbody\s[^>\r\n]+)(\s+<)/$1>\n$2/g;
+    # There seems to be a bug in HTML::TreeBuilder that causes
+    # abutting tags to be skpped!?!
+    $content =~ s!><!> <!g;
     if (0)
       {
       eval "use File::Slurp";
@@ -190,7 +196,8 @@ sub get_list
     my $result = _extract($uk, $content);
     # print Dumper($result);
     # exit 88;
-    last INFINITE if (! defined $result && $result->{items});
+    last INFINITE if (! defined $result);
+    last INFINITE if (! ref $result->{items});
  ITEM:
     foreach my $item (@{$result->{items}})
       {
@@ -211,16 +218,41 @@ sub get_list
         } # if
       push @items, $item;
       } # foreach ITEM
-    my ($next) = ($content =~  m!&(?:amp;)?page=(\d+)">Next!s);
-    # for debug purposes
+    # For debug purposes:
     last INFINITE if $test;
-    # UK doesn't seem to split up over pages
-    # paranoia
-    last INFINITE if ! defined $next;
+    my $sURLNext = $result->{next};
+    if (! defined $sURLNext)
+      {
+      # DEBUG && print STDERR " DDD content===$content===\n";
+      # exit 88;
+      # Use brute force to find it:
+      if ($content =~ m!(&(amp;)?page=\d+)">\s*(<[^>]+>)?Next!)
+        {
+        DEBUG && print STDERR " DDD found next URL with brute force\n";
+        $sURLNext = $1;
+        } # if
+      } # if
+    # Paranoia:
+    if (! defined $sURLNext)
+      {
+      DEBUG && print STDERR " WWW did not find next url\n";
+      last INFINITE;
+      } # if
+    my $iNext = 0;
+    if ($sURLNext !~ m/[;&]page=(\d+)/)
+      {
+      DEBUG && print STDERR " WWW next url =$sURLNext= does not contain page#\n";
+      last INFINITE;
+      } # if
+    $iNext = $1;
     # More paranoia:
-    last INFINITE if ($next <= $page);
-    # and update
-    $page    = $next;
+    if ($iNext <= $iPage)
+      {
+      DEBUG && print STDERR " WWW next url page=$iNext is not greater than current page=$iPage\n";
+      last INFINITE;
+      } # if
+    # ...and update:
+    $iPage = $iNext;
     } # while
   return @items;
   } # get_list
@@ -296,7 +328,7 @@ sub _fetch_page
 sub _extract
   {
   # Required arg1 = whether we are parsing the UK site or not (Boolean):
-  my $iUK = shift;
+  my $iUK = shift || 0;
   # Required arg2 = the HTML contents of the webpage:
   my $s = shift || '';
   DEBUG_HTML && print STDERR " DDD start _extract()\n";
@@ -324,6 +356,8 @@ sub _extract
     # Strip trailing whitespace:
     $sTitle =~ s!\s+\Z!!;
     next SPAN_TAG unless ($sTitle =~ m!\S!);
+    # Strip out zero-width spaces scattered about randomly in item titles
+    $sTitle =~ s/\x{200b}//g;
     DEBUG_HTML && print STDERR " DDD found item named '$sTitle'\n";
     my $sURL = $oA->attr('href');
     DEBUG_HTML && print STDERR " DDD   URL ==$sURL==\n";
@@ -419,21 +453,32 @@ sub _extract
       }
 
     # Find the "author" of this item:
-    my @aoTD = $iUK ? $oParent->look_down(_tag => 'td',
-                                          class => 'small',
-                                         )
-                    : $oParent->look_down(_tag => 'span',
-                                          sub
-                                            {
-                                            my $s = $_[0]->attr('class') || q{};
-                                            $s =~ m'BYLINE'i;
-                                            },
-                                         );
+    my @aoTD;
+    if ($iUK)
+      {
+      @aoTD = $oParent->look_down(_tag => 'td',
+                                  class => 'small',
+                                 );
+      }
+    else
+      {
+      @aoTD = $oParent->look_down(_tag => 'span',
+                                  sub
+                                    {
+                                    my $sHtml = $_[0]->as_HTML;
+                                    # DEBUG_HTML && print STDERR " DDD   try oTDauthor span==$sHtml==\n";
+                                    my $s = $_[0]->attr('class') || q{};
+                                    $s =~ m'BYLINE'i;
+                                    },
+                                 );
+      } # else
     my $sAuthor = '';
  TD_TAG:
     foreach my $oTD (@aoTD)
       {
       next TD_TAG unless ref $oTD;
+      my $s = $oTD->as_HTML;
+      DEBUG_HTML && print STDERR " DDD   try oTDauthor==$s==\n";
       $s = $oTD->as_text;
       if ($s =~ s!\A\s*(by|~)\s+!!)
         {
@@ -484,6 +529,23 @@ sub _extract
     $oParent->detach;
     $oParent->delete;
     } # foreach SPAN_TAG
+  # Look for the next-page link:
+  my $oA = $oTree->look_down(_tag => 'a',
+                             sub
+                               {
+                               my $s = $_[0]->as_text || q{};
+                               $s =~ m/\A\s*Next/;
+                               },
+                            );
+  if (ref $oA)
+    {
+    $rh->{next} = $oA->attr('href');
+    DEBUG_HTML && print STDERR " DDD raw next URL is ==$rh->{next}==\n";
+    } # if
+  else
+    {
+    DEBUG_HTML && print STDERR " DDD did not find next URL\n";
+    }
   return $rh;
   } # _extract
 

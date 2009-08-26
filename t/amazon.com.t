@@ -1,5 +1,5 @@
 
-# $Id: amazon.com.t,v 2.1 2009-07-18 23:33:08 Martin Exp $
+# $Id: amazon.com.t,v 2.2 2009-08-15 23:35:23 Martin Exp $
 
 use strict;
 use warnings;
@@ -16,12 +16,14 @@ BEGIN
 my $sCode = '2EAJG83WS7YZM';
 # This is Martin's, it has two pages:
 $sCode = '2O4B95NPM1W3L';
+# This is Richard Soderberg's which has at least 3 pages:
+# $sCode = '6JX9XSIN6VL5';
 # ok(get_list ($sCode, COM, 1), "Got any items from .com");
 my @arh = get_list($sCode, COM);
 my $iCount = scalar(@arh);
 diag(qq{$sCode\'s wishlist at .COM has $iCount items});
 ok($iCount, 'not an empty list');
-cmp_ok(10, q{<}, $iCount, q{got at least 10 items}); # }); # Emacs bug
+cmp_ok(25, q{<}, $iCount, q{got at least 2 pages}); # }); # Emacs bug
 if (0)
   {
   use Data::Dumper;

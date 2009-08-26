@@ -26,4 +26,4 @@ requires:
   LWP::UserAgent: 0
 resources:
   license: http://dev.perl.org/licenses/
-version: 2.002
+version: 2.006
