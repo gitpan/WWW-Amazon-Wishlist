@@ -12,11 +12,11 @@ $VERSION =~ s/_//ms;
 
 sub use_ptar {
 	my $self = shift;
-        # warn " DDD start use_ptar(), WWW Module::Install::AUTHOR is =$Module::Install::AUTHOR=\n";
+        # warn " DDD start use_ptar(), WWW Module::Install::AUTHOR is =$Module::Install::AUTHOR=\n"; # Martin
 
 	if (! $Module::Install::AUTHOR)
           {
-          warn " WWW bailing because Module::Install::AUTHOR is not set\n";
+          warn " WWW bailing because Module::Install::AUTHOR is not set\n"; # Martin
           return;
           }
 
@@ -30,8 +30,8 @@ sub use_ptar {
 		COMPRESS =>
 q{perl -MIO::Compress::Gzip=gzip,:constants -e"my $$in = $$ARGV[0]; gzip($$in => qq($$in.gz), q(Level) => Z_BEST_COMPRESSION, q(BinModeIn) => 1) or die q(gzip failed); unlink $$in;"},
 	);
-        use Data::Dumper;
-        warn " DDD adding the following to makemaker_args: ", Dumper(\%args);
+        # use Data::Dumper; # Martin
+        # warn " DDD adding the following to makemaker_args: ", Dumper(\%args); # Martin
 	$self->makemaker_args( dist => \%args );
 
 	return 1;

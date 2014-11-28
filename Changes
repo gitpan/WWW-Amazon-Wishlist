@@ -1,3 +1,7 @@
+2014-11-28  Kingpin  <Martin@EV-9D9>
+
+	* lib/WWW/Amazon/Wishlist.pm (get_list): fixed now that HTML page layouts are same
+
 2013-12-14  Kingpin  <Martin@EV-9D9>
 
 	* lib/WWW/Amazon/Wishlist.pm (_extract): fixed for new HTML page layouts

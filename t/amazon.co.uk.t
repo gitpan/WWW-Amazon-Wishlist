@@ -1,5 +1,5 @@
 
-# $Id: amazon.co.uk.t,v 2.2 2013-12-14 20:42:44 Martin Exp $
+# $Id: amazon.co.uk.t,v 2.3 2014-11-28 15:27:07 Martin Exp $
 
 use strict;
 use warnings;
@@ -12,9 +12,10 @@ BEGIN
   use_ok('WWW::Amazon::Wishlist', qw(get_list UK));
   }
 
-my $iDebug = 4;
+my $iDebug = 0;
 
 my $sCode = '108ACFCI5OK8I';
+$sCode = 'A1NU8UVEIOGXZ';
 # ok(get_list ($sCode, UK, 1), "Got any items from .co.uk");
 my @arh = get_list($sCode, UK, $iDebug);
 my $iCount = scalar(@arh);

@@ -8,7 +8,7 @@ use Fcntl qw/:flock :seek/;
 
 use vars qw{$VERSION @ISA $ISCORE};
 BEGIN {
-	$VERSION = '1.06';
+	$VERSION = '1.14';
 	@ISA     = 'Module::Install::Base';
 	$ISCORE  = 1;
 }
@@ -100,7 +100,6 @@ my %makemaker_argtype = (
 
 sub makemaker_args {
 	my ($self, %new_args) = @_;
-        warn " DDD start makemaker_args()...\n"; # Martin
 	my $args = ( $self->{makemaker_args} ||= {} );
 	foreach my $key (keys %new_args) {
 		if ($makemaker_argtype{$key}) {
@@ -109,7 +108,6 @@ sub makemaker_args {
 				unless (ref $args->{$key} eq 'ARRAY') {
 					$args->{$key} = [$args->{$key}]
 				}
-                                warn " DDD   push '$key' onto array...\n"; # Martin
 				push @{$args->{$key}},
 					ref $new_args{$key} eq 'ARRAY'
 						? @{$new_args{$key}}
@@ -117,13 +115,11 @@ sub makemaker_args {
 			}
 			elsif ($makemaker_argtype{$key} eq 'HASH') {
 				$args->{$key} = {} unless defined $args->{$key};
-                                warn " DDD   add to '$key' hash...\n"; # Martin
 				foreach my $skey (keys %{ $new_args{$key} }) {
 					$args->{$key}{$skey} = $new_args{$key}{$skey};
 				}
 			}
 			elsif ($makemaker_argtype{$key} eq 'APPENDABLE') {
-                                warn " DDD   append value onto '$key'...\n"; # Martin
 				$self->makemaker_append($key => $new_args{$key});
 			}
 		}
@@ -131,16 +127,13 @@ sub makemaker_args {
 			if (defined $args->{$key}) {
 				warn qq{MakeMaker attribute "$key" is overriden; use "makemaker_append" to append values\n};
 			}
-                        warn " DDD   replace value of '$key'...\n"; # Martin
 			$args->{$key} = $new_args{$key};
 		}
 	}
-        use Data::Dumper; # Martin
-        warn " DDD   final args are ", Dumper($args); # Martin
 	return $args;
 }
 
-# For mm args that take multiple space-seperated args,
+# For mm args that take multiple space-separated args,
 # append an argument to the current list.
 sub makemaker_append {
 	my $self = shift;
@@ -422,4 +415,4 @@ sub postamble {
 
 __END__
 
-#line 551
+#line 544

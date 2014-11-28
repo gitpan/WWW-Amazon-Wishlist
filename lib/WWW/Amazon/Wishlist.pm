@@ -1,5 +1,5 @@
 
-# $Id: Wishlist.pm,v 2.11 2013-12-16 11:53:24 Martin Exp $
+# $Id: Wishlist.pm,v 2.12 2014-11-28 15:26:36 Martin Exp $
 
 package WWW::Amazon::Wishlist;
 
@@ -29,7 +29,7 @@ require Exporter;
 );
 
 our
-$VERSION = do { my @r = (q$Revision: 2.11 $ =~ /\d+/g); sprintf "%d."."%03d" x $#r, @r };
+$VERSION = do { my @r = (q$Revision: 2.12 $ =~ /\d+/g); sprintf "%d."."%03d" x $#r, @r };
 
 =pod
 
@@ -109,7 +109,7 @@ C<WWW::Amazon::Wishlist> is a screen scraper and is there for
 is vulnerable to any changes that Amazon make to their HTML.
 
 If it starts returning no items then this is very likely the reason
-and I will get roudn to fixing it as soon as possible.
+and I will get around to fixing it as soon as possible.
 
 You might want to look at the C<Net::Amazon> module instead.
 
@@ -135,6 +135,7 @@ list, kill your friends, burn your house and bring about the apocalypse
 =head1 AUTHOR
 
 Simon Wistow <simon@thegestalt.org>
+Currently maintained by Martin Thurn <mthurn@cpan.org>
 
 =head1 SEE ALSO
 
@@ -162,7 +163,7 @@ sub get_list
  INFINITE:
   while (1)
     {
-    my $url = $uk ? "http://www.amazon.co.uk/gp/registry/wishlist/$id/?page=$iPage" :
+    my $url = $uk ? "https://www.amazon.co.uk/gp/registry/wishlist/ref=cm_wl_search_1?page=$iPage&cid=$id" :
     "http://www.amazon.com/gp/registry/wishlist/$id/?page=$iPage";
     # This is a typical complete .com URL as of 2008-12:
     # http://www.amazon.com/gp/registry/wishlist/2O4B95NPM1W3L
@@ -183,12 +184,15 @@ sub get_list
     if (9 < $test)
       {
       eval "use File::Slurp";
-      write_file('PAGES/fetched.html', $content);
+      write_file(qq'PAGES/fetched-$domain.html', $content);
       exit 88;
       } # if
     my $iLen = length($content);
     # warn " DDD fetched $iLen bytes.\n";
-    my $result = _extract($uk, $content, $test);
+
+    # UPDATED 2014-11.  Both USA and UK sites use the same page
+    # format, therefore we always pass COM to the _extract() method:
+    my $result = _extract(COM, $content, $test);
     # print Dumper($result);
     # exit 88;
     if (! defined $result)
@@ -337,7 +341,8 @@ sub _extract
   $oTree->parse($s);
   $oTree->eof;
   my @aoSPAN = $iUK ? $oTree->look_down(_tag => 'div',
-                                        class => 'lineItemGroup',
+                                        class => 'a-text-left a-fixed-left-grid-col a-col-right',
+                                        # class => 'lineItemGroup',
                                        )
                     : $oTree->look_down(_tag => 'div',
                                         class => 'a-text-left a-fixed-left-grid-col a-col-right',

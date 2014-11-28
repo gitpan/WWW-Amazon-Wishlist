@@ -1,7 +1,6 @@
 
-# $Id: Makefile.PL,v 2.2 2013-12-14 20:42:31 Martin Exp $
+# $Id: Makefile.PL,v 2.4 2014-11-28 15:27:19 Martin Exp $
 
-use Env;
 use inc::Module::Install;
 
 BEGIN { $Module::Install::AUTHOR = 1; }
@@ -16,6 +15,7 @@ requires('HTML::TreeBuilder');
 requires('LWP::UserAgent');
 test_requires('Test::More');
 
+use Env;
 if ($ENV{MTHURN_PERL_DEV})
   {
   warn "DDD This is author's development environment\n";
@@ -24,7 +24,7 @@ if ($ENV{MTHURN_PERL_DEV})
 
 WriteAll;
 
-if ($ENV{MTHURN_PERL_DEV})
+if (0 && $ENV{MTHURN_PERL_DEV})
   {
   my $sFnameMakefile = q{Makefile};
   eval "use File::Slurp";
